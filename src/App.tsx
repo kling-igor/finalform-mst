@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 
 import { Form, Field } from 'react-final-form'
-import { Config } from "final-form";
+import { Config, FormApi, createForm } from "final-form";
 
 enum FieldNames {
   NAME = 'name',
@@ -19,7 +19,18 @@ const initialValues: Config<FormValue>["initialValues"] = {
   [FieldNames.COMMENT]: 'initial comment'
 }
 
-class App extends React.Component {
+class App extends React.Component<{}> {
+
+  public readonly finalFormApi: FormApi<FormValue>;
+
+  constructor(props: {}) {
+    super(props);
+
+    this.finalFormApi = createForm({
+      onSubmit: this.onSubmit,
+      initialValues
+    })
+  }
 
   onSubmit: Config<FormValue>["onSubmit"] = async (values: FormValue): Promise<any> => {
     console.log(values)
@@ -31,7 +42,7 @@ class App extends React.Component {
       <div className="App">
         <Form
           onSubmit={this.onSubmit}
-          initialValues={initialValues}
+          form={this.finalFormApi}
           render={({ handleSubmit, submitting, pristine, form }) => (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
               <Field
