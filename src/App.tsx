@@ -4,6 +4,55 @@ import './App.css';
 import { Form, Field } from 'react-final-form'
 import { Config, FormApi, createForm } from "final-form";
 
+import { types, Instance, flow } from "mobx-state-tree";
+import { observer } from "mobx-react";
+import { v4 as uuidv4 } from 'uuid';
+
+
+
+const Wish = types.model("Wish", {
+  id: types.identifier,
+  name: types.optional(types.string, ""),
+  comment: types.optional(types.string, "")
+})
+
+interface IWish extends Instance<typeof Wish> { }
+
+
+const mock: IWish[] = [
+  {
+    id: uuidv4(),
+    name: 'PS5',
+    comment: 'New, not in use'
+  },
+  {
+    id: uuidv4(),
+    name: 'Mac-mini',
+    comment: 'at least 2017'
+  }
+]
+
+function getWishes(): Promise<IWish[]> {
+  return new Promise(resolve => setTimeout(() => {
+    resolve(mock);
+  }, 2000))
+}
+
+const WishStore = types.model("WishStore", {
+  wishes: types.array(Wish)
+})
+  .actions(self => ({
+    fetch: flow(function* () {
+      const wishes: IWish[] = yield getWishes();
+      self.wishes.replace(wishes);
+    })
+  }))
+
+// https://final-form.org/docs/react-final-form/examples
+
+
+const store = WishStore.create({ wishes: [] })
+
 enum FieldNames {
   NAME = 'name',
   COMMENT = 'comment'
@@ -19,6 +68,7 @@ const initialValues: Config<FormValue>["initialValues"] = {
   [FieldNames.COMMENT]: 'initial comment'
 }
 
+@observer
 class App extends React.Component<{}> {
 
   public readonly finalFormApi: FormApi<FormValue>;
@@ -30,6 +80,10 @@ class App extends React.Component<{}> {
       onSubmit: this.onSubmit,
       initialValues
     })
+  }
+
+  componentDidMount() {
+    store.fetch();
   }
 
   onSubmit: Config<FormValue>["onSubmit"] = async (values: FormValue): Promise<any> => {
@@ -82,7 +136,10 @@ class App extends React.Component<{}> {
             </form>
           )}
         />
-      </div>
+        <div>
+          {store.wishes.map((wish: IWish) => (<div key={wish.id} >{wish.name}</div>))}
+        </div>
+      </div >
     );
   }
 }
