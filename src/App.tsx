@@ -5,8 +5,10 @@ import { Form, Field } from 'react-final-form'
 
 class App extends React.Component {
 
-  onSubmit = (values: any) => {
+  onSubmit = async (values: any): Promise<any> => {
     console.log(values)
+
+    return new Promise(resolve => setTimeout(resolve, 1000))
   }
 
   render() {
@@ -14,9 +16,9 @@ class App extends React.Component {
       <div className="App">
         <Form
           onSubmit={this.onSubmit}
-          // validate={validate}
+          initialValues={{ name: 'initial name', comment: 'initial comment' }}
           render={({ handleSubmit, submitting, pristine, form }) => (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
               <Field
                 name="name"
                 render={({ input, meta }) => (
@@ -37,16 +39,20 @@ class App extends React.Component {
                   </div>
                 )}
               />
-              <button type="submit" disabled={submitting || pristine}>
-                Submit
-              </button>
-              <button
-                type="button"
-                onClick={form.reset}
-                disabled={submitting || pristine}
-              >
-                Reset
-              </button>
+              <div>
+                <button type="submit" disabled={submitting || pristine} style={{ width: '8rem' }}>
+                  Submit
+                </button>
+                <button
+                  type="button"
+                  onClick={form.reset}
+                  disabled={submitting || pristine}
+                  style={{ width: '8rem' }}
+                >
+                  Reset
+                </button>
+              </div>
+              {submitting && <span>submitting...</span>}
             </form>
           )}
         />
